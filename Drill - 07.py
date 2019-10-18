@@ -21,6 +21,37 @@ class Boy():
     def draw(self):
         self.image.clip_draw(self.frame * 100, 100, 100, 100, self.x, self.y)
 
+class Big_Ball():
+    def __init__(self):
+        self.x, self.y = random.randint(100, 700), 599
+        self.image = load_image('ball41x41.png')
+
+    def update(self):
+        self.y -= random.randint(10, 30)
+
+    def draw(self):
+        self.image.draw(self.x, self.y)
+
+    def update_close(self):
+        self.y = -50
+
+class Small_Ball():
+    def __init__(self):
+        self.x, self.y = random.randint(100, 700), 599
+        self.image = load_image('ball21x21.png')
+
+    def update(self):
+        self.y -= random.randint(10, 30)
+
+    def draw(self):
+        self.image.draw(self.x, self.y)
+
+    def update_close(self):
+        self.y = -50
+
+small_ball_count = random.randint(1, 10)
+big_ball_count = 20 - small_ball_count
+
 def handle_events():
     global running
     events = get_events()
@@ -34,6 +65,8 @@ open_canvas()
 
 grass = Grass()
 team = [Boy() for i in range(11)]
+small_ball = [Small_Ball() for j in range(10)]
+big_ball = [Big_Ball() for k in range(10)]
 running = True
 
 while running:
@@ -42,12 +75,30 @@ while running:
     for boy in team:
         boy.update()
 
+    for s_ball in small_ball:
+        s_ball.update()
+
+    for b_ball in big_ball:
+        b_ball.update()
+
+    for s_ball in small_ball:
+        if s_ball.y < 30:
+            s_ball.update_close()
+
+    for b_ball in big_ball:
+        if b_ball.y < 30:
+            b_ball.update_close()
+
     clear_canvas()
     grass.draw()
     for boy in team:
         boy.draw()
+    for s_ball in small_ball:
+        s_ball.draw()
+    for b_ball in big_ball:
+        b_ball.draw()
     update_canvas()
 
-    delay(0.02)
+    delay(0.1)
 
 close_canvas()
