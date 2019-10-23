@@ -4,9 +4,11 @@ import main_state
 
 image = None
 
+
 def enter():
     global image
     image = load_image('pause.png')
+    
 
 
 def pause():
