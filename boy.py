@@ -1,33 +1,63 @@
+import game_framework
 from pico2d import *
 
+import game_world
+
+# Boy Run Speed
+PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
+RUN_SPEED_KMPH = 20.0  # Km / Hour
+RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
+RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
+RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
+
+# Boy Action Speed
+TIME_PER_ACTION = 0.5
+ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+FRAMES_PER_ACTION = 8
+
+
+
 # Boy Event
-RIGHT_DOWN, LEFT_DOWN, RIGHT_UP, LEFT_UP, DASH, DASH_UP = range(6)
+RIGHTKEY_DOWN, LEFTKEY_DOWN, UPKEY_DOWN, DOWNKEY_DOWN, RIGHTKEY_UP, LEFTKEY_UP, UPKEY_UP, DOWNKEY_UP, SPACE = range(9)
 
 key_event_table = {
-    (SDL_KEYDOWN, SDLK_RIGHT): RIGHT_DOWN,
-    (SDL_KEYDOWN, SDLK_LEFT): LEFT_DOWN,
-    (SDL_KEYUP, SDLK_RIGHT): RIGHT_UP,
-    (SDL_KEYUP, SDLK_LEFT): LEFT_UP,
-    (SDL_KEYDOWN, SDLK_RSHIFT): DASH,
-    (SDL_KEYUP, SDLK_RSHIFT): DASH_UP
+    (SDL_KEYDOWN, SDLK_RIGHT): RIGHTKEY_DOWN,
+    (SDL_KEYDOWN, SDLK_LEFT): LEFTKEY_DOWN,
+    (SDL_KEYDOWN, SDLK_UP): UPKEY_DOWN,
+    (SDL_KEYDOWN, SDLK_DOWN): DOWNKEY_DOWN,
+    (SDL_KEYUP, SDLK_RIGHT): RIGHTKEY_UP,
+    (SDL_KEYUP, SDLK_LEFT): LEFTKEY_UP,
+    (SDL_KEYUP, SDLK_UP): UPKEY_UP,
+    (SDL_KEYUP, SDLK_DOWN): DOWNKEY_UP,
+    (SDL_KEYDOWN, SDLK_SPACE): SPACE
 }
-
 
 
 # Boy States
 
-class IdleState:
+class WalkingState:
+
     @staticmethod
     def enter(boy, event):
-        if event == RIGHT_DOWN:
-            boy.velocity += 1
-        elif event == LEFT_DOWN:
-            boy.velocity -= 1
-        elif event == RIGHT_UP:
-            boy.velocity -= 1
-        elif event == LEFT_UP:
-            boy.velocity += 1
-        boy.timer = 1000
+        if event == RIGHTKEY_DOWN:
+            boy.x_velocity += RUN_SPEED_PPS
+        elif event == RIGHTKEY_UP:
+            boy.x_velocity -= RUN_SPEED_PPS
+        if event == LEFTKEY_DOWN:
+            boy.x_velocity -= RUN_SPEED_PPS
+        elif event == LEFTKEY_UP:
+            boy.x_velocity += RUN_SPEED_PPS
+
+        if event == UPKEY_DOWN:
+            boy.y_velocity += RUN_SPEED_PPS
+        elif event == UPKEY_UP:
+            boy.y_velocity -= RUN_SPEED_PPS
+        if event == DOWNKEY_DOWN:
+            boy.y_velocity -= RUN_SPEED_PPS
+        elif event == DOWNKEY_UP:
+            boy.y_velocity += RUN_SPEED_PPS
+
+
 
     @staticmethod
     def exit(boy, event):
@@ -35,115 +65,63 @@ class IdleState:
 
     @staticmethod
     def do(boy):
-        boy.frame = (boy.frame+1) % 8
-        boy.timer -= 1
+        boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % FRAMES_PER_ACTION
+        boy.x += boy.x_velocity * game_framework.frame_time
+        boy.y += boy.y_velocity * game_framework.frame_time
+        boy.x = clamp(25, boy.x, 1280 - 25)
+        boy.y = clamp(25, boy.y, 1024 - 25)
 
     @staticmethod
     def draw(boy):
-        if boy.dir == 1:
-            boy.image.clip_draw(boy.frame*100, 300, 100, 100, boy.x, boy.y)
+        if boy.x_velocity > 0:
+            boy.image.clip_draw(int(boy.frame) * 100, 100, 100, 100, boy.x, boy.y)
+            boy.dir = 1
+        elif boy.x_velocity < 0:
+            boy.image.clip_draw(int(boy.frame) * 100, 0, 100, 100, boy.x, boy.y)
+            boy.dir = -1
         else:
-            boy.image.clip_draw(boy.frame*100, 200, 100, 100, boy.x, boy.y)
-
-class RunState:
-    @staticmethod
-    def enter(boy, event):
-        if event == RIGHT_DOWN:
-            boy.velocity += 1
-        elif event == LEFT_DOWN:
-            boy.velocity -= 1
-        elif event == RIGHT_UP:
-            boy.velocity -= 1
-        elif event == LEFT_UP:
-            boy.velocity += 1
-        boy.dir = boy.velocity
-
-    @staticmethod
-    def exit(boy, event):
-        pass
-
-    @staticmethod
-    def do(boy):
-        boy.frame = (boy.frame+1) % 8
-        boy.timer -= 1
-        boy.x += boy.velocity
-        boy.x = clamp(25, boy.x, 800 - 25)
-
-    @staticmethod
-    def draw(boy):
-        if boy.velocity == 1:
-            boy.image.clip_draw(boy.frame*100, 100, 100, 100, boy.x, boy.y)
-        else:
-            boy.image.clip_draw(boy.frame*100, 0, 100, 100, boy.x, boy.y)
-
-class DashState:
-    @staticmethod
-    def enter(boy, event):
-        if event == DASH:
-            boy.velocity -= 2
-        elif event == DASH_UP:
-            boy.velocity += 2
-        boy.timer = 30
-
-    @staticmethod
-    def exit(boy, event):
-        pass
-
-    @staticmethod
-    def do(boy):
-        boy.frame = (boy.frame + 1) % 8
-        boy.timer -= 1
-        boy.x += boy.velocity
-        boy.x = clamp(25, boy.x, 800 - 25)
-
-    @staticmethod
-    def draw(boy):
-        if boy.velocity == 2:
-            boy.image.clip_draw(boy.frame * 100, 100, 100, 100, boy.x, boy.y)
-        else:
-            boy.image.clip_draw(boy.frame * 100, 0, 100, 100, boy.x, boy.y)
+            # if boy x_velocity == 0
+            if boy.y_velocity > 0 or boy.y_velocity < 0:
+                if boy.dir == 1:
+                    boy.image.clip_draw(int(boy.frame) * 100, 100, 100, 100, boy.x, boy.y)
+                else:
+                    boy.image.clip_draw(int(boy.frame) * 100, 0, 100, 100, boy.x, boy.y)
+            else:
+                # boy is idle
+                if boy.dir == 1:
+                    boy.image.clip_draw(int(boy.frame) * 100, 300, 100, 100, boy.x, boy.y)
+                else:
+                    boy.image.clip_draw(int(boy.frame) * 100, 200, 100, 100, boy.x, boy.y)
 
 
 next_state_table = {
-IdleState : {RIGHT_UP:RunState, LEFT_UP:RunState,
-             RIGHT_DOWN:RunState, LEFT_DOWN:RunState,
-             DASH:IdleState, DASH_UP:IdleState},
-RunState : {RIGHT_UP:IdleState, LEFT_UP:IdleState,
-            LEFT_DOWN:IdleState, RIGHT_DOWN:IdleState,
-            DASH:DashState, DASH_UP:DashState},
-DashState : {RIGHT_UP:IdleState, LEFT_UP:IdleState,
-            LEFT_DOWN:IdleState, RIGHT_DOWN:IdleState,
-             DASH:DashState, DASH_UP:RunState}
+    WalkingState: {RIGHTKEY_UP: WalkingState, LEFTKEY_UP: WalkingState, RIGHTKEY_DOWN: WalkingState, LEFTKEY_DOWN: WalkingState,
+                UPKEY_UP: WalkingState, UPKEY_DOWN: WalkingState, DOWNKEY_UP: WalkingState, DOWNKEY_DOWN: WalkingState,
+                SPACE: WalkingState}
 }
-
-
-
-
-
 
 
 class Boy:
 
     def __init__(self):
-        self.x, self.y = 800 // 2, 90
+        self.x, self.y = 1280 // 2, 1024 // 2
+        # Boy is only once created, so instance image loading is fine
         self.image = load_image('animation_sheet.png')
+        self.font = load_font('ENCR10B.TTF', 16)
         self.dir = 1
-        self.velocity = 0
+        self.x_velocity, self.y_velocity = 0, 0
         self.frame = 0
-        self.timer = 0
         self.event_que = []
-        self.cur_state = IdleState
+        self.cur_state = WalkingState
         self.cur_state.enter(self, None)
 
-
-    def change_state(self,  state):
+    def get_bb(self):
         # fill here
-        pass
+        return self.x - 50, self.y - 50, self.x + 50, self.y + 50
 
 
     def add_event(self, event):
         self.event_que.insert(0, event)
-
 
     def update(self):
         self.cur_state.do(self)
@@ -155,9 +133,13 @@ class Boy:
 
     def draw(self):
         self.cur_state.draw(self)
-
+        self.font.draw(self.x - 60, self.y + 50, '(Time: %3.2f)' % get_time(), (255, 255, 0))
+        #fill here
+        draw_rectangle(*self.get_bb())
+        #debug_print('Velocity :' + str(self.velocity) + '  Dir:' + str(self.dir) + ' Frame Time:' + str(game_framework.frame_time))
 
     def handle_event(self, event):
         if (event.type, event.key) in key_event_table:
             key_event = key_event_table[(event.type, event.key)]
             self.add_event(key_event)
+

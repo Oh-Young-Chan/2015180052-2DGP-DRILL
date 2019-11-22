@@ -3,35 +3,57 @@ import json
 import os
 
 from pico2d import *
-
 import game_framework
-
+import game_world
 
 from boy import Boy
-from grass import Grass
-
+from ball import Ball
+from ground import Ground
+from zombie import Zombie
 
 
 name = "MainState"
 
 boy = None
-grass = None
-font = None
+zombie = None
 
+
+def collide(a, b):
+    # fill here
+    left_a, bottom_a, right_a, top_a = a.get_bb()
+    left_b, bottom_b, right_b, top_b = b.get_bb()
+
+    if left_a > right_b: return False
+    if right_a < left_b: return False
+    if top_a < bottom_b: return False
+    if bottom_a > top_b: return False
+
+    return True
+
+
+
+def get_boy():
+    return boy
 
 
 def enter():
-    global boy, grass
+    global boy
     boy = Boy()
-    grass = Grass()
+    game_world.add_object(boy, 1)
 
+    global ball
+    ball = Ball()
+    game_world.add_object(ball, 1)
+
+    global zombie
+    zombie = Zombie()
+    game_world.add_object(zombie, 1)
+
+    ground = Ground()
+    game_world.add_object(ground, 0)
 
 def exit():
-    global boy, grass
-    del boy
-    del grass
-
-
+    game_world.clear()
 
 def pause():
     pass
@@ -52,14 +74,15 @@ def handle_events():
             boy.handle_event(event)
 
 
-
 def update():
-    boy.update()
+    for game_object in game_world.all_objects():
+        game_object.update()
+
 
 def draw():
     clear_canvas()
-    grass.draw()
-    boy.draw()
+    for game_object in game_world.all_objects():
+        game_object.draw()
     update_canvas()
 
 
