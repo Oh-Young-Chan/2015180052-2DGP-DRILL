@@ -12,6 +12,9 @@ class Ball:
         self.x, self.y = random.randint(0, 1280-1), random.randint(0, 1024-1)
         self.fill_HP = 50
 
+    def get_pos(self):
+        return self.x, self.y
+
     def get_bb(self):
         # fill here
         return self.x - 10, self.y - 10, self.x + 10, self.y + 10
@@ -36,6 +39,9 @@ class BigBall:
             BigBall.image = load_image('ball41x41.png')
         self.x, self.y = random.randint(0, 1280-1), random.randint(0, 1024-1)
         self.fill_HP = 100
+
+    def get_pos(self):
+        return self.x, self.y
 
     def get_bb(self):
         return self.x - 20, self.y - 20, self.x + 20, self.y + 20

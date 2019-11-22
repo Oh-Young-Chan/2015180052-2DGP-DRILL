@@ -39,7 +39,6 @@ def collide(a, b):
 def get_boy():
     return boy
 
-
 def enter():
     global boy
     boy = Boy()
@@ -51,6 +50,7 @@ def enter():
         game_world.add_object(balls[i], 1)
 
     global BigBall
+    global bigballs
     bigballs = [BigBall() for i in range(5)]
     for i in range(5):
         game_world.add_object(bigballs[i], 1)
@@ -61,6 +61,9 @@ def enter():
 
     ground = Ground()
     game_world.add_object(ground, 0)
+
+def get_bigballs():
+    return bigballs
 
 def exit():
     game_world.clear()

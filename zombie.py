@@ -17,6 +17,7 @@ TIME_PER_ACTION = 0.5
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 FRAMES_PER_ACTION = 10
 
+from ball import BigBall
 
 animation_names = ['Attack', 'Dead', 'Idle', 'Walk']
 
@@ -35,6 +36,8 @@ class Zombie:
         self.load_images()
         self.dir = random.random()*2*math.pi # random moving direction
         self.speed = 0
+        self.target_x, self.target_y = None, None
+        self.bigball_order = 1
         self.timer = 1.0 # change direction every 1 sec when wandering
         self.frame = 0
         self.build_behavior_tree()
@@ -58,17 +61,44 @@ class Zombie:
         # fill here
         pass
 
+    def find_bigball(self):
+        bigballs = main_state.get_bigballs()
+        bigball_list = bigballs[self.bigball_order % len(bigballs)]
+        self.target_x, self.target_y = bigball_list.x, bigball_list.y
+        self.bigball_order += 1
+        self.dir = math.atan2(self.target_y - self.y, self.target_x - self.x)
+        return BehaviorTree.SUCCESS
+
+    def move_to_bigball(self):
+        self.speed = RUN_SPEED_PPS
+        self.calculate_current_position()
+
+        distance = (self.target_x - self.x)**2 + (self.target_y - self.y)**2
+
+        if distance < PIXEL_PER_METER**2:
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.RUNNING
+
+    def find_ball(self):
+        pass
+
+    def move_to_ball(self):
+        pass
+
     def get_next_position(self):
         # fill here
         pass
 
     def move_to_target(self):
-        # fill here
         pass
 
     def build_behavior_tree(self):
-        # fill here
-        pass
+        find_bigball_node = LeafNode("find bigball", self.find_bigball)
+        move_to_bigball_node = LeafNode("move to bigball", self.move_to_bigball)
+        eat_node = SequenceNode("eat")
+        eat_node.add_children(find_bigball_node, move_to_bigball_node)
+        self.bt = BehaviorTree(eat_node)
 
 
 
@@ -77,8 +107,7 @@ class Zombie:
         return self.x - 50, self.y - 50, self.x + 50, self.y + 50
 
     def update(self):
-        # fill here
-        pass
+        self.bt.run()
 
 
     def draw(self):
@@ -92,6 +121,8 @@ class Zombie:
                 Zombie.images['Idle'][int(self.frame)].draw(self.x, self.y, 100, 100)
             else:
                 Zombie.images['Walk'][int(self.frame)].draw(self.x, self.y, 100, 100)
+
+        draw_rectangle(*self.get_bb())
 
     def handle_event(self, event):
         pass
