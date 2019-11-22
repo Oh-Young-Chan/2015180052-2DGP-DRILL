@@ -84,7 +84,10 @@ def quit():
 
 
 import time
+<<<<<<< HEAD
 
+=======
+>>>>>>> 9283d2998f0fc708cfeac1fcf87c0abc9e5f9bc8
 frame_time = 0.0
 
 def run(start_state):
@@ -100,9 +103,15 @@ def run(start_state):
         stack[-1].update()
         stack[-1].draw()
         frame_time = time.time() - current_time
+<<<<<<< HEAD
         #frame_rate = 1.0 / frame_time
         current_time += frame_time
         #print("Frame Time : %f sec, Frame Rate: %f fps" % (frame_time, frame_rate))
+=======
+        frame_rate = 1.0/frame_time
+        current_time += frame_time
+        print("Frame Time : %f sec, Frame Rate : %f fps" %(frame_time, frame_rate))
+>>>>>>> 9283d2998f0fc708cfeac1fcf87c0abc9e5f9bc8
 
     # repeatedly delete the top of the stack
     while (len(stack) > 0):

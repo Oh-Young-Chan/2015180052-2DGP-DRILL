@@ -7,14 +7,20 @@ import game_framework
 import game_world
 
 from boy import Boy
+<<<<<<< HEAD
 from ball import Ball
 from ground import Ground
 from zombie import Zombie
+=======
+from grass import Grass
+from bird import Bird
+>>>>>>> 9283d2998f0fc708cfeac1fcf87c0abc9e5f9bc8
 
 
 name = "MainState"
 
 boy = None
+<<<<<<< HEAD
 zombie = None
 
 
@@ -31,6 +37,8 @@ def collide(a, b):
     return True
 
 
+=======
+>>>>>>> 9283d2998f0fc708cfeac1fcf87c0abc9e5f9bc8
 
 def get_boy():
     return boy
@@ -39,12 +47,21 @@ def get_boy():
 def enter():
     global boy
     boy = Boy()
+<<<<<<< HEAD
     game_world.add_object(boy, 1)
+=======
+    grass = Grass()
+    bird = Bird()
+    game_world.add_object(grass, 0)
+    game_world.add_object(boy, 1)
+    game_world.add_object(bird, 1)
+>>>>>>> 9283d2998f0fc708cfeac1fcf87c0abc9e5f9bc8
 
     global ball
     ball = Ball()
     game_world.add_object(ball, 1)
 
+<<<<<<< HEAD
     global zombie
     zombie = Zombie()
     game_world.add_object(zombie, 1)
@@ -52,6 +69,8 @@ def enter():
     ground = Ground()
     game_world.add_object(ground, 0)
 
+=======
+>>>>>>> 9283d2998f0fc708cfeac1fcf87c0abc9e5f9bc8
 def exit():
     game_world.clear()
 
@@ -77,6 +96,10 @@ def handle_events():
 def update():
     for game_object in game_world.all_objects():
         game_object.update()
+<<<<<<< HEAD
+=======
+    # fill here
+>>>>>>> 9283d2998f0fc708cfeac1fcf87c0abc9e5f9bc8
 
 
 def draw():
