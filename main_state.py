@@ -18,6 +18,9 @@ name = "MainState"
 boy = None
 zombie = None
 
+balls = []
+bigballs = []
+
 
 def collide(a, b):
     # fill here
@@ -43,12 +46,14 @@ def enter():
     game_world.add_object(boy, 1)
 
     global ball
-    ball = Ball()
-    game_world.add_object(ball, 1)
+    balls = [Ball() for i in range(5)]
+    for i in range(5):
+        game_world.add_object(balls[i], 1)
 
     global BigBall
-    bigball = BigBall()
-    game_world.add_object(bigball, 1)
+    bigballs = [BigBall() for i in range(5)]
+    for i in range(5):
+        game_world.add_object(bigballs[i], 1)
 
     global zombie
     zombie = Zombie()
