@@ -38,6 +38,7 @@ class Zombie:
         self.speed = 0
         self.target_x, self.target_y = None, None
         self.bigball_order = 1
+        self.ball_order = 1
         self.timer = 1.0 # change direction every 1 sec when wandering
         self.frame = 0
         self.build_behavior_tree()
@@ -81,10 +82,23 @@ class Zombie:
             return BehaviorTree.RUNNING
 
     def find_ball(self):
-        pass
+        balls = main_state.get_balls()
+        ball_list = balls[self.ball_order % len(balls)]
+        self.target_x, self.target_y = ball_list.x, ball_list.y
+        self.ball_order += 1
+        self.dir = math.atan2(self.target_y - self.y, self.target_x - self.x)
+        return BehaviorTree.SUCCESS
 
     def move_to_ball(self):
-        pass
+        self.speed = RUN_SPEED_PPS
+        self.calculate_current_position()
+
+        distance = (self.target_x - self.x) ** 2 + (self.target_y - self.y) ** 2
+
+        if distance < PIXEL_PER_METER ** 2:
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.RUNNING
 
     def get_next_position(self):
         # fill here
@@ -96,8 +110,14 @@ class Zombie:
     def build_behavior_tree(self):
         find_bigball_node = LeafNode("find bigball", self.find_bigball)
         move_to_bigball_node = LeafNode("move to bigball", self.move_to_bigball)
+        eat_bigball_node = SequenceNode("eat bigball")
+        eat_bigball_node.add_children(find_bigball_node, move_to_bigball_node)
+        find_ball_node = LeafNode("find ball", self.find_ball)
+        move_to_ball_node = LeafNode("move to ball", self.move_to_ball)
+        eat_ball_node = SequenceNode("eat ball")
+        eat_ball_node.add_children(find_ball_node, move_to_ball_node)
         eat_node = SequenceNode("eat")
-        eat_node.add_children(find_bigball_node, move_to_bigball_node)
+        eat_node.add_children(eat_bigball_node, eat_ball_node)
         self.bt = BehaviorTree(eat_node)
 
 

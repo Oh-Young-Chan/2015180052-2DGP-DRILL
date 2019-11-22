@@ -45,6 +45,7 @@ def enter():
     game_world.add_object(boy, 1)
 
     global ball
+    global balls
     balls = [Ball() for i in range(5)]
     for i in range(5):
         game_world.add_object(balls[i], 1)
@@ -64,6 +65,9 @@ def enter():
 
 def get_bigballs():
     return bigballs
+
+def get_balls():
+    return balls
 
 def exit():
     game_world.clear()
